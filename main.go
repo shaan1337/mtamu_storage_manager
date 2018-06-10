@@ -4,8 +4,9 @@ import "time"
 
 func main() {
 	mtaStorageManager := &MTAStorageManager{
-		scope:            "/home/shaan/Downloads",
-		scanIntervalSecs: 15,
+		Scope:                 "/home/shaan/Downloads",
+		FileScanIntervalSecs:  15,
+		IndexScanIntervalSecs: 15,
 	}
 
 	mtaStorageManager.Init()

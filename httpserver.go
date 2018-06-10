@@ -1,13 +1,6 @@
 package mta
 
-import (
-	"encoding/json"
-	"fmt"
-	"log"
-	"net/http"
-	"strconv"
-)
-
+/*
 var httpMessageQueue chan<- *Message
 
 //HTTPServer struct
@@ -101,3 +94,4 @@ func backupHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "%s", res.msg)
 	close(output)
 }
+*/

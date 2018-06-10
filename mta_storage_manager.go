@@ -2,55 +2,44 @@ package mta
 
 //MTAStorageManager struct
 type MTAStorageManager struct {
-	messageQueue     chan *Message
-	scope            string
-	scanIntervalSecs int
-	fileWatcher      *FileWatcher
-	backupService    *BackupService
-	index            *Index
+	Scope                 string
+	FileScanIntervalSecs  int
+	IndexScanIntervalSecs int
+	fileWatcher           *FileWatcher
+	backupService         *BackupService
+	index                 *Index
 }
 
 //Init initialize MTA Storage Manager
-func (mtaStorageManager *MTAStorageManager) Init() {
-	mtaStorageManager.messageQueue = make(chan *Message)
-
-	mtaStorageManager.index = &Index{
-		q:    mtaStorageManager.messageQueue,
+func (m *MTAStorageManager) Init() {
+	m.index = &Index{
 		file: "files.index",
 	}
+	m.index.Init()
 
-	mtaStorageManager.index.Init()
-
-	mtaStorageManager.fileWatcher = &FileWatcher{
-		q:                mtaStorageManager.messageQueue,
-		scope:            mtaStorageManager.scope,
-		scanIntervalSecs: mtaStorageManager.scanIntervalSecs,
+	m.fileWatcher = &FileWatcher{
+		scope:                 m.Scope,
+		fileScanIntervalSecs:  m.FileScanIntervalSecs,
+		indexScanIntervalSecs: m.IndexScanIntervalSecs,
+		index: m.index,
 	}
+	m.fileWatcher.Init()
 
-	mtaStorageManager.fileWatcher.Init()
+	m.backupService = &BackupService{}
+	m.backupService.Init()
 
-	mtaStorageManager.backupService = &BackupService{
-		q: mtaStorageManager.messageQueue,
-	}
-	mtaStorageManager.backupService.Init()
-
-	go mtaStorageManager.fileWatcher.StartWatching()
-	go mtaStorageManager.backupService.StartCron()
-	go mtaStorageManager.startProcessing()
+	go m.fileWatcher.StartWatching()
+	go m.backupService.StartCron()
 }
 
-func (mtaStorageManager *MTAStorageManager) startProcessing() {
-	for {
-		msg := <-mtaStorageManager.messageQueue
-		switch msg.msg {
-		case "list_files":
-			go mtaStorageManager.index.ListFiles(msg)
-		case "search_files":
-			go mtaStorageManager.index.SearchFiles(msg)
-		case "backup_file":
-			go mtaStorageManager.backupService.BackupFile(msg)
-		case "update_file_info":
-			go mtaStorageManager.index.UpdateFileInfo(msg)
-		}
-	}
+func (m *MTAStorageManager) UpdatePath(path string) {
+	m.fileWatcher.ScanPath(path, 1)
+}
+
+func (m *MTAStorageManager) GetFileInfo(path string) (*FileInfo, error) {
+	return m.index.GetFileInfo(path)
+}
+
+func (m *MTAStorageManager) GetDirectoryListing(dir string) (*DirListing, error) {
+	return m.index.GetDirectoryListing(dir)
 }
