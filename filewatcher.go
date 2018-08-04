@@ -114,7 +114,7 @@ func (fw *FileWatcher) ScanIndex() {
 		for _, fileInfo := range fileInfos {
 			_, err := os.Stat(fileInfo.Path)
 			if err != nil {
-				err1 := fw.index.DeleteFileInfo(fileInfo.Path)
+				err1 := fw.index.DeletePath(fileInfo.Path)
 				if err1 != nil {
 					fmt.Printf("[filewatcher] error deleting %s from index: %s\n", fileInfo.Path, err.Error())
 				}

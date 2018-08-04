@@ -313,7 +313,7 @@ func (idx *Index) UpdateFileInfo(path string, fileInfo *FileInfo, out chan bool)
 	out <- true
 }
 
-func (idx *Index) DeleteFileInfo(path string) error {
+func (idx *Index) DeletePath(path string) error {
 	fmt.Printf("[index] deleting path: %s\n", path)
 	return idx.bleveIndex.Delete(path)
 }

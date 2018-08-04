@@ -1,5 +1,7 @@
 package mta
 
+import "math"
+
 //MTAStorageManager struct
 type MTAStorageManager struct {
 	Scope                 string
@@ -32,8 +34,12 @@ func (m *MTAStorageManager) Init() {
 	go m.backupService.StartCron()
 }
 
-func (m *MTAStorageManager) UpdatePath(path string) {
-	m.fileWatcher.ScanPath(path, 1)
+func (m *MTAStorageManager) PathDeleted(path string) {
+	m.index.DeletePath(path)
+}
+
+func (m *MTAStorageManager) PathAdded(path string) {
+	m.fileWatcher.ScanPath(path, math.MaxInt32)
 }
 
 func (m *MTAStorageManager) GetFileInfo(path string) (*FileInfo, error) {
