@@ -46,6 +46,6 @@ func (m *MTAStorageManager) GetFileInfo(path string) (*FileInfo, error) {
 	return m.index.GetFileInfo(path)
 }
 
-func (m *MTAStorageManager) GetDirectoryListing(dir string) (*DirListing, error) {
-	return m.index.GetDirectoryListing(dir)
+func (m *MTAStorageManager) GetDirectoryListing(dir string, includeSubDirectories bool) (*DirListing, error) {
+	return m.index.GetDirectoryListing(dir, includeSubDirectories)
 }

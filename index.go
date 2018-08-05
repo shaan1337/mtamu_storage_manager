@@ -2,6 +2,7 @@ package mta
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"strings"
 	"time"
@@ -144,10 +145,18 @@ func ParseMode(modestring string) os.FileMode {
 	return os.FileMode(mode)
 }
 
-func (index *Index) getDirectoryListing(dir string) (*DirListing, error) {
-	query := bleve.NewTermQuery(dir)
-	query.SetField("parentpath")
-	search := bleve.NewSearchRequest(query)
+func (index *Index) getDirectoryListing(dir string, includeSubDirectories bool) (*DirListing, error) {
+	var search *bleve.SearchRequest
+	if includeSubDirectories {
+		query := bleve.NewPrefixQuery(dir)
+		query.SetField("parentpath")
+		search = bleve.NewSearchRequest(query)
+	} else {
+		query := bleve.NewTermQuery(dir)
+		query.SetField("parentpath")
+		search = bleve.NewSearchRequest(query)
+	}
+	search.Size = math.MaxInt32
 	searchResults, err := index.bleveIndex.Search(search)
 	if err != nil {
 		return nil, err
@@ -273,12 +282,12 @@ func (idx *Index) GetFileInfo(file string) (*FileInfo, error) {
 	return idx.getFileInfo(doc)
 }
 
-func (idx *Index) GetDirectoryListing(dir string) (*DirListing, error) {
+func (idx *Index) GetDirectoryListing(dir string, includeSubDirectories bool) (*DirListing, error) {
 	_, err := idx.bleveIndex.Document(dir)
 	if err != nil {
 		return nil, fmt.Errorf("directory not found: %s", dir)
 	}
-	return idx.getDirectoryListing(dir)
+	return idx.getDirectoryListing(dir, includeSubDirectories)
 }
 
 func (idx *Index) UpdateFileInfo(path string, fileInfo *FileInfo, out chan bool) {
