@@ -69,8 +69,17 @@ func (index *Index) ListFiles(page int) ([]*FileInfo, bool, error) {
 
 	var fileInfos []*FileInfo
 	for _, val := range searchResults.Hits {
-		doc, _ := index.bleveIndex.Document(val.ID)
-		fileInfo, _ := index.getFileInfo(doc)
+		doc, err := index.bleveIndex.Document(val.ID)
+		if err != nil {
+			fmt.Printf("[index] Error reading document %s from bleve index: %s\n", val.ID, err)
+			continue
+		}
+		fileInfo, err := index.getFileInfo(doc)
+		if err != nil {
+			fmt.Printf("[index] Error parsing file info for %s from index document: %s\n", val.ID, err)
+			continue
+		}
+
 		fileInfos = append(fileInfos, fileInfo)
 	}
 
@@ -276,7 +285,7 @@ const (
 
 func (idx *Index) GetFileInfo(file string) (*FileInfo, error) {
 	doc, err := idx.bleveIndex.Document(file)
-	if err != nil {
+	if doc == nil || err != nil {
 		return nil, fmt.Errorf("file not found: %s", file)
 	}
 	return idx.getFileInfo(doc)
